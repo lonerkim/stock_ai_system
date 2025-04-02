@@ -1,0 +1,41 @@
+# 기본 패키지
+python-dotenv==1.0.0
+fastapi==0.104.1
+uvicorn==0.24.0
+celery==5.3.4
+redis==5.0.1
+requests==2.31.0
+pydantic>=2.5.2
+loguru==0.7.2
+
+# 데이터 처리
+pandas==2.1.1
+numpy==1.26.1
+yfinance==0.2.31
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# 임베딩 및 AI
+sentence-transformers==2.2.2
+transformers==4.35.0
+torch==2.1.0
+openai==1.2.3
+google-generativeai==0.3.1
+mistralai==0.0.7
+
+# Neo4j 연동
+neo4j==5.13.0
+py2neo==2021.2.4
+
+# 텔레그램 봇
+python-telegram-bot==20.6
+
+# 테스트 및 개발
+pytest==7.4.3
+black==23.10.1
+isort==5.12.0
+flake8==6.1.0
+
+# 벡터 데이터베이스 (선택적)
+hnswlib==0.7.0
+faiss-cpu==1.7.4
