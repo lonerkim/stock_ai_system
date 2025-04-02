@@ -1,32 +1,27 @@
-FROM python:3.9-slim
+# 백엔드 서비스 Dockerfile
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# 시스템 패키지 설치
+# 필요한 패키지 설치
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    git \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 필요한 Python 패키지 설치
-COPY requirements.txt /app/
+# 의존성 파일 복사 및 설치
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 코드 복사
-COPY app /app/app
-RUN mkdir -p /app/data
+COPY backend/app /app/app
 
 # 환경 변수 설정
 ENV PYTHONPATH=/app
-
-# 디버깅을 위한 추가 설정
-RUN echo "Python path:" && python -c "import sys; print(sys.path)"
-RUN echo "Directory structure:" && find /app -type f | sort
+ENV PYTHONUNBUFFERED=1
 
 # 포트 노출
 EXPOSE 8000
 
-# 기본 명령어 설정
+# 애플리케이션 실행
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

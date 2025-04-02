@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # 백엔드 서비스
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: stock-market-ai-backend
+    restart: unless-stopped
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - LOCAL_AI_ENDPOINT=${LOCAL_AI_ENDPOINT:-http://host.docker.internal:11434}
+    volumes:
+      - ../data:/app/data
+    depends_on:
+      - neo4j
+    networks:
+      - stock-market-network
+
+  # 프론트엔드 서비스
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: stock-market-ai-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - stock-market-network
+
+  # 텔레그램 봇 서비스
+  telegram-bot:
+    build:
+      context: ..
+      dockerfile: docker/telegram-bot.Dockerfile
+    container_name: stock-market-ai-telegram-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - ALLOWED_CHAT_IDS=${ALLOWED_CHAT_IDS:-}
+      - API_BASE_URL=http://backend:8000
+      - NOTIFY_ON_MARKET_OPEN=${NOTIFY_ON_MARKET_OPEN:-true}
+      - NOTIFY_ON_MARKET_CLOSE=${NOTIFY_ON_MARKET_CLOSE:-true}
+      - NOTIFY_ON_SIGNIFICANT_CHANGE=${NOTIFY_ON_SIGNIFICANT_CHANGE:-true}
+      - SIGNIFICANT_CHANGE_THRESHOLD=${SIGNIFICANT_CHANGE_THRESHOLD:-5}
+      - DAILY_REPORT_TIME=${DAILY_REPORT_TIME:-18:00}
+      - WEEKLY_REPORT_DAY=${WEEKLY_REPORT_DAY:-friday}
+      - WEEKLY_REPORT_TIME=${WEEKLY_REPORT_TIME:-18:00}
+      - MONTHLY_REPORT_DAY=${MONTHLY_REPORT_DAY:-1}
+      - MONTHLY_REPORT_TIME=${MONTHLY_REPORT_TIME:-18:00}
+    volumes:
+      - ../logs:/app/logs
+    depends_on:
+      - backend
+    networks:
+      - stock-market-network
+
+  # Neo4j 데이터베이스
+  neo4j:
+    image: neo4j:5.13.0
+    container_name: stock-market-ai-neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-password}
+      - NEO4J_dbms_memory_pagecache_size=1G
+      - NEO4J_dbms_memory_heap_initial__size=1G
+      - NEO4J_dbms_memory_heap_max__size=2G
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-import:/var/lib/neo4j/import
+      - neo4j-plugins:/plugins
+    networks:
+      - stock-market-network
+
+networks:
+  stock-market-network:
+    driver: bridge
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  neo4j-import:
+  neo4j-plugins:
