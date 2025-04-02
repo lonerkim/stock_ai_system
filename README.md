@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # 주식 시장 정보 수집 및 AI 분석 시스템 배포 가이드
 
 이 문서는 주식 시장 정보 수집 및 AI 분석 시스템의 배포 방법을 설명합니다.
@@ -132,6 +133,8 @@ docker-compose exec neo4j neo4j-admin dump --database=neo4j --to=/data/backups/n
 
 더 자세한 정보는 프로젝트 문서를 참조하세요.
 =======
+=======
+>>>>>>> Stashed changes
 # 주식 시장 AI 분석 시스템
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -252,4 +255,7 @@ docker compose up -d
 ## 제작자
 
 이 프로젝트는 [Manus.ai](https://manus.ai/)에 의해 개발되었으며, 사용자에 의해 검증되거나 테스트되지 않았습니다. 모든 내용은 교육 목적으로만 제공됩니다.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
