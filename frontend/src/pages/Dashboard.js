@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Typography, 
-  Grid, 
-  Paper, 
-  Box, 
-  Card, 
-  CardContent, 
+import {
+  Typography,
+  Grid,
+  Paper,
+  Box,
+  Card,
+  CardContent,
   CardHeader,
   CircularProgress,
-  Divider
+  Divider,
+  Alert
 } from '@mui/material';
 import { Line } from 'react-chartjs-2';
 import {
@@ -33,8 +34,12 @@ ChartJS.register(
   Legend
 );
 
+// API 서비스 가져오기
+import { marketApi, portfolioApi } from '../services/api';
+
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [marketData, setMarketData] = useState({
     korean: { summary: '', trend: '' },
     us: { summary: '', trend: '' }
@@ -78,50 +83,107 @@ const Dashboard = () => {
     },
   };
 
-  // 데이터 로딩 시뮬레이션
+  // API에서 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
-      // 실제 구현에서는 API 호출로 대체
-      setTimeout(() => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 한국 시장 데이터 가져오기
+        const koreanMarketData = await marketApi.getMarketOverview('korean')
+          .catch(err => {
+            console.error('한국 시장 데이터 가져오기 실패:', err);
+            return { summary_text: '한국 시장 데이터를 가져오는 중 오류가 발생했습니다.', trend: '알 수 없음' };
+          });
+
+        // 미국 시장 데이터 가져오기
+        const usMarketData = await marketApi.getMarketOverview('us')
+          .catch(err => {
+            console.error('미국 시장 데이터 가져오기 실패:', err);
+            return { summary_text: '미국 시장 데이터를 가져오는 중 오류가 발생했습니다.', trend: '알 수 없음' };
+          });
+
+        // 시장 데이터 설정
         setMarketData({
-          korean: { 
-            summary: '한국 시장은 최근 기술주를 중심으로 상승세를 보이고 있습니다.', 
-            trend: '상승' 
+          korean: {
+            summary: koreanMarketData.summary_text || '데이터 없음',
+            trend: determineTrend(koreanMarketData)
           },
-          us: { 
-            summary: '미국 시장은 인플레이션 우려로 인해 변동성이 커지고 있습니다.', 
-            trend: '혼조' 
+          us: {
+            summary: usMarketData.summary_text || '데이터 없음',
+            trend: determineTrend(usMarketData)
           }
         });
-        
-        // 샘플 포트폴리오 데이터
-        const today = new Date();
-        const history = [];
-        let value = 100;
-        
-        for (let i = 30; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          
-          // 랜덤 변동 (-3% ~ +3%)
-          const change = (Math.random() * 6 - 3) / 100;
-          value = value * (1 + change);
-          
-          history.push({
-            date: date.toISOString().split('T')[0],
-            value: parseFloat(value.toFixed(2))
+
+        // 포트폴리오 데이터 가져오기
+        try {
+          const portfolioResponse = await portfolioApi.getPerformance();
+
+          setPortfolioData({
+            initialValue: portfolioResponse.initial_value || 100,
+            currentValue: portfolioResponse.current_value || 100,
+            roi: portfolioResponse.roi || 0,
+            history: portfolioResponse.history || []
+          });
+        } catch (portfolioError) {
+          console.error('포트폴리오 데이터 가져오기 실패:', portfolioError);
+
+          // 포트폴리오 API 실패 시 샘플 데이터 생성
+          const today = new Date();
+          const history = [];
+          let value = 100;
+
+          for (let i = 30; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+
+            // 약간의 변동 (-1% ~ +1%)
+            const change = (Math.random() * 2 - 1) / 100;
+            value = value * (1 + change);
+
+            history.push({
+              date: date.toISOString().split('T')[0],
+              value: parseFloat(value.toFixed(2))
+            });
+          }
+
+          setPortfolioData({
+            initialValue: 100,
+            currentValue: parseFloat(value.toFixed(2)),
+            roi: parseFloat(((value - 100) / 100 * 100).toFixed(2)),
+            history
           });
         }
-        
-        setPortfolioData({
-          initialValue: 100,
-          currentValue: parseFloat(value.toFixed(2)),
-          roi: parseFloat(((value - 100) / 100 * 100).toFixed(2)),
-          history
-        });
-        
+      } catch (error) {
+        console.error('데이터 가져오기 실패:', error);
+        setError('데이터를 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } finally {
         setLoading(false);
-      }, 1500);
+      }
+    };
+
+    // 시장 트렌드 결정 함수
+    const determineTrend = (marketData) => {
+      if (!marketData || !marketData.indices) return '알 수 없음';
+
+      // 한국 시장인 경우 KOSPI 확인
+      if (marketData.indices.KOSPI) {
+        const changePercent = marketData.indices.KOSPI.change_percent;
+        if (changePercent > 0.5) return '상승';
+        if (changePercent < -0.5) return '하락';
+        return '보합';
+      }
+
+      // 미국 시장인 경우 S&P500 확인
+      if (marketData.indices['S&P500']) {
+        const changePercent = marketData.indices['S&P500'].change_percent;
+        if (changePercent > 0.5) return '상승';
+        if (changePercent < -0.5) return '하락';
+        return '보합';
+      }
+
+      return '알 수 없음';
     };
 
     fetchData();
@@ -135,12 +197,20 @@ const Dashboard = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Typography variant="h4" gutterBottom>
         대시보드
       </Typography>
-      
+
       <Grid container spacing={3}>
         {/* 포트폴리오 요약 */}
         <Grid item xs={12} md={4}>
@@ -151,15 +221,15 @@ const Dashboard = () => {
             <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
               ${portfolioData.currentValue}
             </Typography>
-            <Typography 
-              variant="subtitle1" 
+            <Typography
+              variant="subtitle1"
               color={portfolioData.roi >= 0 ? 'success.main' : 'error.main'}
             >
               {portfolioData.roi >= 0 ? '+' : ''}{portfolioData.roi}% (${(portfolioData.currentValue - portfolioData.initialValue).toFixed(2)})
             </Typography>
           </Paper>
         </Grid>
-        
+
         {/* 한국 시장 요약 */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 140 }}>
@@ -169,15 +239,15 @@ const Dashboard = () => {
             <Typography variant="body1" sx={{ flexGrow: 1 }}>
               {marketData.korean.summary}
             </Typography>
-            <Typography 
-              variant="subtitle1" 
+            <Typography
+              variant="subtitle1"
               color={marketData.korean.trend === '상승' ? 'success.main' : marketData.korean.trend === '하락' ? 'error.main' : 'text.secondary'}
             >
               트렌드: {marketData.korean.trend}
             </Typography>
           </Paper>
         </Grid>
-        
+
         {/* 미국 시장 요약 */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 140 }}>
@@ -187,15 +257,15 @@ const Dashboard = () => {
             <Typography variant="body1" sx={{ flexGrow: 1 }}>
               {marketData.us.summary}
             </Typography>
-            <Typography 
-              variant="subtitle1" 
+            <Typography
+              variant="subtitle1"
               color={marketData.us.trend === '상승' ? 'success.main' : marketData.us.trend === '하락' ? 'error.main' : 'text.secondary'}
             >
               트렌드: {marketData.us.trend}
             </Typography>
           </Paper>
         </Grid>
-        
+
         {/* 포트폴리오 차트 */}
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
@@ -204,7 +274,7 @@ const Dashboard = () => {
             </Box>
           </Paper>
         </Grid>
-        
+
         {/* 최근 AI 분석 */}
         <Grid item xs={12}>
           <Card>
@@ -212,10 +282,10 @@ const Dashboard = () => {
             <Divider />
             <CardContent>
               <Typography variant="body1" paragraph>
-                최근 시장 분석에 따르면, 기술 섹터와 헬스케어 섹터가 강세를 보이고 있습니다. 특히 반도체 관련 주식들이 공급망 개선과 AI 수요 증가로 인해 상승세를 유지하고 있습니다.
+                {marketData.korean.summary}
               </Typography>
               <Typography variant="body1">
-                단기적으로는 중앙은행의 금리 정책과 인플레이션 지표를 주시할 필요가 있으며, 장기 투자자들에게는 기술, 헬스케어, 그리고 지속 가능한 에너지 섹터의 블루칩 주식들이 매력적인 옵션으로 보입니다.
+                {marketData.us.summary}
               </Typography>
             </CardContent>
           </Card>

@@ -38,43 +38,61 @@
 ### 1. 저장소 클론
 
 ```bash
-git clone https://github.com/yourusername/stock-market-ai.git
-cd stock-market-ai
+git clone https://github.com/yourusername/stock_ai_system.git
+cd stock_ai_system
 ```
 
 ### 2. 환경 설정
 
 ```bash
-# 환경 설정 스크립트 실행
-chmod +x docker/setup.sh
-./docker/setup.sh setup
-
 # .env 파일 편집
-nano docker/.env
+nano .env
 ```
 
 ### 3. 컨테이너 실행
 
 ```bash
-# Docker 네트워크 생성
-chmod +x docker/network.sh
-./docker/network.sh create
-
 # Docker Compose로 서비스 시작
-cd docker
 docker compose up -d
 ```
 
 ### 4. 접속 방법
 
-- **웹 UI**: http://localhost:80 (또는 .env 파일에서 설정한 포트)
+- **웹 UI**: http://localhost:3000
 - **API 문서**: http://localhost:8000/docs
-- **Neo4j 브라우저**: http://localhost:7474 (기본 사용자: neo4j, 비밀번호: .env 파일에서 설정)
-- **텔레그램 봇**: .env 파일에 설정한 봇 토큰으로 텔레그램에서 접속
+- **Neo4j 브라우저**: http://localhost:7474 (기본 사용자: neo4j, 비밀번호: password)
 
-## 상세 설치 및 설정 가이드
+## 로컬 개발 환경 설정
 
-자세한 설치 및 설정 방법은 [설치 가이드](docs/installation.md)를 참조하세요.
+### 백엔드
+
+```bash
+# 백엔드 디렉토리로 이동
+cd backend
+
+# 가상 환경 생성 및 활성화
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 개발 서버 실행
+python run.py
+```
+
+### 프론트엔드
+
+```bash
+# 프론트엔드 디렉토리로 이동
+cd frontend
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm start
+```
 
 ## API 키 설정
 
@@ -96,16 +114,9 @@ docker compose up -d
 3. 대시보드에서 시장 개요 및 추천 종목 확인
 4. 모의 투자 페이지에서 AI 기반 투자 결정 및 성과 추적
 
-### 텔레그램 봇 사용법
 
-1. 텔레그램에서 봇 검색 (봇 이름은 .env 파일에 설정한 토큰에 따라 다름)
-2. `/start` 명령어로 봇 시작
-3. `/help` 명령어로 사용 가능한 명령어 목록 확인
-4. `/summary`, `/portfolio`, `/daily` 등의 명령어로 정보 요청
 
-## 개발자 가이드
 
-개발 환경 설정 및 코드 기여 방법은 [개발자 가이드](docs/developer-guide.md)를 참조하세요.
 
 ## 라이선스
 
@@ -115,6 +126,4 @@ docker compose up -d
 
 이 프로젝트는 교육 목적으로만 제공됩니다. 실제 투자 결정에 사용하지 마세요. 모든 투자에는 위험이 따르며, 과거의 성과가 미래의 결과를 보장하지 않습니다.
 
-## 제작자
 
-이 프로젝트는 [Manus.ai](https://manus.ai/)에 의해 개발되었으며, 사용자에 의해 검증되거나 테스트되지 않았습니다. 모든 내용은 교육 목적으로만 제공됩니다.
