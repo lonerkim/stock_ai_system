@@ -39,6 +39,33 @@ services:
     networks:
       - stock-market-network
 
+  # 텔레그램 봇 서비스
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    container_name: stock-market-ai-telegram-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - ALLOWED_CHAT_IDS=${ALLOWED_CHAT_IDS:-}
+      - API_BASE_URL=http://backend:8000
+      - NOTIFY_ON_MARKET_OPEN=${NOTIFY_ON_MARKET_OPEN:-true}
+      - NOTIFY_ON_MARKET_CLOSE=${NOTIFY_ON_MARKET_CLOSE:-true}
+      - NOTIFY_ON_SIGNIFICANT_CHANGE=${NOTIFY_ON_SIGNIFICANT_CHANGE:-true}
+      - SIGNIFICANT_CHANGE_THRESHOLD=${SIGNIFICANT_CHANGE_THRESHOLD:-5}
+      - DAILY_REPORT_TIME=${DAILY_REPORT_TIME:-18:00}
+      - WEEKLY_REPORT_DAY=${WEEKLY_REPORT_DAY:-friday}
+      - WEEKLY_REPORT_TIME=${WEEKLY_REPORT_TIME:-18:00}
+      - MONTHLY_REPORT_DAY=${MONTHLY_REPORT_DAY:-1}
+      - MONTHLY_REPORT_TIME=${MONTHLY_REPORT_TIME:-18:00}
+    volumes:
+      - ./telegram-bot/logs:/app/logs
+    depends_on:
+      - backend
+    networks:
+      - stock-market-network
+
   # Neo4j 데이터베이스
   neo4j:
     image: neo4j:5.18.0

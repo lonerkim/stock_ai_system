@@ -28,6 +28,7 @@ from app.data_fetchers.KoreanMarketDataFetcher import KoreanMarketDataFetcher
 from app.data_fetchers.USMarketDataFetcher import USMarketDataFetcher
 from app.data_fetchers.data_cache import DataCache
 from app.data_fetchers.data_processor import DataProcessor
+from app.routers import reports
 
 # 환경 변수 로드
 load_dotenv()
@@ -54,6 +55,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 라우터 등록
+app.include_router(reports.router)
 
 # 데이터베이스 연결 설정
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://neo4j:7687")
