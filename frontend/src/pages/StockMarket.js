@@ -22,13 +22,13 @@ import {
   IconButton,
   Alert
 } from '@mui/material';
+import { marketApi } from '../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 
-// API 서비스 가져오기
-import { marketApi } from '../services/api';
+// API 서비스 사용
 
 const StockMarket = () => {
   const [loading, setLoading] = useState(true);

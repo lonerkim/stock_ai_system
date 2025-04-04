@@ -22,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { marketApi, portfolioApi } from '../services/api';
 
 // Chart.js 등록
 ChartJS.register(
@@ -34,8 +35,7 @@ ChartJS.register(
   Legend
 );
 
-// API 서비스 가져오기
-import { marketApi, portfolioApi } from '../services/api';
+// API 서비스 사용
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
