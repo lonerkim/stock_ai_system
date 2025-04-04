@@ -4,8 +4,8 @@ services:
   # 백엔드 서비스
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: stock-market-ai-backend
     restart: unless-stopped
     environment:
@@ -28,8 +28,8 @@ services:
   # 프론트엔드 서비스
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: stock-market-ai-frontend
     restart: unless-stopped
     ports:
@@ -42,8 +42,8 @@ services:
   # 텔레그램 봇 서비스
   telegram-bot:
     build:
-      context: ./telegram-bot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: telegram-bot/Dockerfile
     container_name: stock-market-ai-telegram-bot
     restart: unless-stopped
     environment:
