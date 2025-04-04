@@ -11,14 +11,26 @@ const { formatCurrency, formatPercentage } = require('./utils');
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const apiBaseUrl = process.env.API_BASE_URL || 'http://backend:8000';
 
-// 봇 생성
-const bot = new TelegramBot(token, { polling: true });
+// 토큰이 없는 경우 처리
+if (!token) {
+  logger.warn('텔레그램 봇 토큰이 설정되지 않았습니다. 봇이 실행되지 않습니다.');
+  console.log('텔레그램 봇 토큰이 설정되지 않았습니다. 봇이 실행되지 않습니다.');
+  // 무한 루프로 유지
+  setInterval(() => {
+    console.log('텔레그램 봇이 대기 중입니다. 토큰을 설정하려면 .env 파일을 업데이트하고 봇을 재시작하세요.');
+  }, 60000); // 1분마다 메시지 출력
+} else {
+  // 봇 생성
+  const bot = new TelegramBot(token, { polling: true });
 
-// 허용된 채팅 ID 목록
-const allowedChatIds = (process.env.ALLOWED_CHAT_IDS || '').split(',').map(id => id.trim());
+  logger.info('텔레그램 봇이 시작되었습니다');
+  console.log('Telegram bot is running...');
 
-// 설정
-const config = {
+  // 허용된 채팅 ID 목록
+  const allowedChatIds = (process.env.ALLOWED_CHAT_IDS || '').split(',').map(id => id.trim());
+
+  // 설정
+  const config = {
   notifyOnMarketOpen: process.env.NOTIFY_ON_MARKET_OPEN === 'true',
   notifyOnMarketClose: process.env.NOTIFY_ON_MARKET_CLOSE === 'true',
   notifyOnSignificantChange: process.env.NOTIFY_ON_SIGNIFICANT_CHANGE === 'true',
@@ -553,8 +565,9 @@ new cron.CronJob(`0 ${monthlyMinute} ${monthlyHour} ${monthlyReportDay} * *`, as
   }
 }, null, true, 'Asia/Seoul');
 
-// 봇 시작 로그
-logger.info('Telegram bot started');
-console.log('Telegram bot is running...');
+  // 봇 시작 로그
+  logger.info('Telegram bot started');
+  console.log('Telegram bot is running...');
+}
 
 module.exports = bot;
