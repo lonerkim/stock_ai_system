@@ -4,8 +4,8 @@ FROM node:20-alpine
 WORKDIR /app
 
 # 의존성 파일 복사 및 설치
-COPY telegram-bot/package.json telegram-bot/package-lock.json* ./
-RUN npm ci
+COPY telegram-bot/package.json ./
+RUN npm install
 
 # 애플리케이션 코드 복사
 COPY telegram-bot/src ./src

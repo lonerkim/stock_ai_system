@@ -16,6 +16,8 @@ services:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - LOCAL_AI_ENDPOINT=${LOCAL_AI_ENDPOINT:-http://host.docker.internal:11434}
+    ports:
+      - "8000:8000"
     volumes:
       - ../data:/app/data
     depends_on:

@@ -4,8 +4,8 @@ FROM node:20-alpine as build
 WORKDIR /app
 
 # 의존성 파일 복사 및 설치
-COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm ci
+COPY frontend/package.json ./
+RUN npm install
 
 # 애플리케이션 코드 복사
 COPY frontend/src ./src
