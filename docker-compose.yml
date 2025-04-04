@@ -5,7 +5,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: docker/backend.Dockerfile
     container_name: stock-market-ai-backend
     restart: unless-stopped
     environment:
@@ -29,11 +29,11 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
+      dockerfile: docker/frontend.Dockerfile
     container_name: stock-market-ai-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-80}:80"
     depends_on:
       - backend
     networks:
@@ -43,7 +43,7 @@ services:
   telegram-bot:
     build:
       context: .
-      dockerfile: telegram-bot/Dockerfile
+      dockerfile: docker/telegram-bot.Dockerfile
     container_name: stock-market-ai-telegram-bot
     restart: unless-stopped
     environment:
@@ -60,7 +60,7 @@ services:
       - MONTHLY_REPORT_DAY=${MONTHLY_REPORT_DAY:-1}
       - MONTHLY_REPORT_TIME=${MONTHLY_REPORT_TIME:-18:00}
     volumes:
-      - ./telegram-bot/logs:/app/logs
+      - ./logs:/app/logs
     depends_on:
       - backend
     networks:
