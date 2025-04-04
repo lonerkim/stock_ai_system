@@ -28,8 +28,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 
-// API 서비스 사용
-
 const StockMarket = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
